@@ -1,105 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<title>Ganpati Virtual Dress</title>
+<title>Ganpati Virtual Dress AR</title>
 
 <style>
-
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
 }
 
-body {
-  margin: 0;
-  background: #101010;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
+body{
+  margin:0;
+  background:#101010;
+  color:white;
+  font-family:Arial,sans-serif;
+  text-align:center;
 }
 
-h1 {
-  margin: 18px 0 5px;
+h1{
+  margin:16px 0 4px;
+  font-size:25px;
 }
 
-#status {
-  margin: 8px;
-  color: #00ff88;
+#status{
+  margin:8px;
+  color:#00ff88;
+  min-height:20px;
 }
 
-.camera {
-  position: relative;
-  width: 96%;
-  max-width: 600px;
-  margin: 12px auto;
-  overflow: hidden;
-  border-radius: 18px;
-  background: black;
+.camera{
+  position:relative;
+  width:96%;
+  max-width:650px;
+  margin:12px auto;
+  overflow:hidden;
+  border-radius:18px;
+  background:#000;
 }
 
-#camera {
-  width: 100%;
-  display: block;
+#camera{
+  width:100%;
+  display:block;
 }
 
-#dressCanvas {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+#dressCanvas{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
 }
 
-button {
-  border: 0;
-  border-radius: 25px;
-  padding: 12px 17px;
-  margin: 5px;
-  font-size: 15px;
-  font-weight: bold;
+/* CLOTH SCAN GUIDE */
+
+#scanGuide{
+  position:absolute;
+  left:12%;
+  top:15%;
+  width:76%;
+  height:70%;
+  border:3px dashed #00ff88;
+  border-radius:18px;
+  pointer-events:none;
+  display:none;
 }
 
-button.active {
-  outline: 3px solid #00ff88;
+#scanGuideText{
+  position:absolute;
+  left:0;
+  right:0;
+  top:7%;
+  color:white;
+  font-size:15px;
+  font-weight:bold;
+  text-shadow:0 2px 5px #000;
 }
 
-.controls {
-  max-width: 500px;
-  width: 95%;
-  margin: 10px auto;
+/* BUTTONS */
+
+button{
+  border:0;
+  border-radius:25px;
+  padding:12px 16px;
+  margin:5px;
+  font-size:15px;
+  font-weight:bold;
 }
 
-label {
-  display: block;
-  margin: 12px;
+button.active{
+  outline:3px solid #00ff88;
 }
 
-input[type="range"] {
-  width: 90%;
+button:active{
+  transform:scale(.97);
 }
 
-#preview {
-  display: none;
-  width: 130px;
-  height: 100px;
-  object-fit: contain;
-  margin: 10px auto;
-  border-radius: 10px;
+/* CONTROLS */
+
+.controls{
+  width:95%;
+  max-width:520px;
+  margin:12px auto 30px;
+  padding:10px;
 }
 
+.controlBox{
+  background:#191919;
+  border-radius:14px;
+  padding:8px;
+  margin:8px 0;
+}
+
+label{
+  display:block;
+  margin:12px 5px;
+  font-size:14px;
+}
+
+input[type=range]{
+  width:90%;
+}
+
+/* PREVIEW */
+
+#preview{
+  display:none;
+  width:140px;
+  height:110px;
+  object-fit:contain;
+  margin:10px auto;
+  border-radius:10px;
+  background:#222;
+}
+
+.small{
+  font-size:12px;
+  color:#aaa;
+  margin:5px 15px;
+}
 </style>
-
 </head>
 
 <body>
 
-<h1>🛕 Ganpati Virtual Dress</h1>
+<h1>🛕 Ganpati Virtual Dress AR</h1>
 
 <div id="status">
 Start camera
@@ -107,38 +154,46 @@ Start camera
 
 <div class="camera">
 
-<video id="camera"
-       autoplay
-       playsinline></video>
+  <video
+    id="camera"
+    autoplay
+    playsinline>
+  </video>
 
-<canvas id="dressCanvas"></canvas>
+  <canvas id="dressCanvas"></canvas>
+
+  <div id="scanGuide">
+    <div id="scanGuideText">
+      Place the real cloth inside this box
+    </div>
+  </div>
 
 </div>
 
 
-<!-- GARMENT TYPE -->
+<!-- DRESS TYPE -->
 
 <div>
 
 <button id="dhotiBtn"
-        onclick="selectDress('dhoti')">
+onclick="selectDress('dhoti')">
 👕 Dhoti
 </button>
 
 <button id="dupattaBtn"
-        onclick="selectDress('dupatta')">
+onclick="selectDress('dupatta')">
 🧣 Dupatta
 </button>
 
 <button id="phetaBtn"
-        onclick="selectDress('pheta')">
+onclick="selectDress('pheta')">
 👑 Pheta
 </button>
 
 </div>
 
 
-<!-- CAMERA CONTROLS -->
+<!-- CAMERA -->
 
 <div>
 
@@ -146,7 +201,7 @@ Start camera
 📷 Start Camera
 </button>
 
-<button onclick="scanCloth()">
+<button onclick="beginScan()">
 📸 Scan Cloth
 </button>
 
@@ -160,87 +215,146 @@ Start camera
 <img id="preview">
 
 
-<!-- POSITION CONTROLS -->
+<div class="small">
+First scan the real cloth. Then point the camera at the real Ganpati.
+</div>
+
+
+<!-- FITTING CONTROLS -->
 
 <div class="controls">
+
+<div class="controlBox">
 
 <label>
 Vertical Position
 <br>
-<input id="posY"
-       type="range"
-       min="10"
-       max="90"
-       value="58"
-       oninput="drawDress()">
+<input
+id="posY"
+type="range"
+min="10"
+max="90"
+value="58"
+oninput="drawDress()">
 </label>
 
 <label>
-Garment Size
+Overall Size
 <br>
-<input id="size"
-       type="range"
-       min="15"
-       max="90"
-       value="45"
-       oninput="drawDress()">
+<input
+id="size"
+type="range"
+min="15"
+max="90"
+value="45"
+oninput="drawDress()">
 </label>
 
 <label>
 Rotation
 <br>
-<input id="rotation"
-       type="range"
-       min="-30"
-       max="30"
-       value="0"
-       oninput="drawDress()">
+<input
+id="rotation"
+type="range"
+min="-30"
+max="30"
+value="0"
+oninput="drawDress()">
 </label>
 
 </div>
 
 
-<canvas id="scanCanvas"
-        style="display:none"></canvas>
+<div
+class="controlBox"
+id="dhotiControls">
+
+<label>
+Left Leg Position
+<br>
+<input
+id="leftX"
+type="range"
+min="-35"
+max="-5"
+value="-20"
+oninput="drawDress()">
+</label>
+
+<label>
+Right Leg Position
+<br>
+<input
+id="rightX"
+type="range"
+min="5"
+max="35"
+value="20"
+oninput="drawDress()">
+</label>
+
+<label>
+Dhoti Length
+<br>
+<input
+id="dhotiLength"
+type="range"
+min="50"
+max="120"
+value="85"
+oninput="drawDress()">
+</label>
+
+</div>
+
+</div>
+
+
+<canvas
+id="scanCanvas"
+style="display:none">
+</canvas>
 
 
 <script>
 
 let stream = null;
 
-let scannedCloth = null;
-
 let selectedDress = "dhoti";
+
+let scannedCloth = null;
 
 let clothImage = null;
 
+let scanning = false;
 
-/* =========================
+
+/* =====================================
    CAMERA
-========================= */
+===================================== */
 
-async function startCamera() {
+async function startCamera(){
 
-  try {
+  try{
 
     stream =
       await navigator.mediaDevices.getUserMedia({
 
-        video: {
-          facingMode: {
-            ideal: "environment"
+        video:{
+          facingMode:{
+            ideal:"environment"
           },
 
-          width: {
-            ideal: 1280
+          width:{
+            ideal:1280
           },
 
-          height: {
-            ideal: 720
+          height:{
+            ideal:720
           }
         },
 
-        audio: false
+        audio:false
 
       });
 
@@ -259,7 +373,7 @@ async function startCamera() {
 
   }
 
-  catch(error) {
+  catch(error){
 
     console.log(error);
 
@@ -272,11 +386,11 @@ async function startCamera() {
 }
 
 
-/* =========================
-   CANVAS
-========================= */
+/* =====================================
+   CANVAS SIZE
+===================================== */
 
-function resizeCanvas() {
+function resizeCanvas(){
 
   const video =
     document.getElementById("camera");
@@ -284,7 +398,8 @@ function resizeCanvas() {
   const canvas =
     document.getElementById("dressCanvas");
 
-  if (!video.videoWidth) return;
+  if(!video.videoWidth)
+    return;
 
   canvas.width =
     video.videoWidth;
@@ -293,28 +408,27 @@ function resizeCanvas() {
     video.videoHeight;
 
   drawDress();
-
 }
 
 
-/* =========================
-   GARMENT SELECT
-========================= */
+/* =====================================
+   SELECT DRESS
+===================================== */
 
-function selectDress(type) {
+function selectDress(type){
 
   selectedDress = type;
 
   document
     .querySelectorAll("button")
-    .forEach(function(button) {
+    .forEach(function(btn){
 
-      button.classList.remove("active");
+      btn.classList.remove("active");
 
     });
 
 
-  if (type === "dhoti") {
+  if(type === "dhoti"){
 
     document
       .getElementById("dhotiBtn")
@@ -322,8 +436,7 @@ function selectDress(type) {
 
   }
 
-
-  if (type === "dupatta") {
+  if(type === "dupatta"){
 
     document
       .getElementById("dupattaBtn")
@@ -331,8 +444,7 @@ function selectDress(type) {
 
   }
 
-
-  if (type === "pheta") {
+  if(type === "pheta"){
 
     document
       .getElementById("phetaBtn")
@@ -341,23 +453,73 @@ function selectDress(type) {
   }
 
 
+  document
+    .getElementById("dhotiControls")
+    .style.display =
+    type === "dhoti"
+      ? "block"
+      : "none";
+
+
   document.getElementById("status")
     .innerText =
     "Selected: " +
     type.toUpperCase();
 
   drawDress();
+}
+
+
+/* =====================================
+   START SCAN
+===================================== */
+
+function beginScan(){
+
+  if(!stream){
+
+    alert("Start camera first.");
+
+    return;
+
+  }
+
+  scanning = true;
+
+  document
+    .getElementById("scanGuide")
+    .style.display =
+    "block";
+
+  document.getElementById("status")
+    .innerText =
+    "📸 Place the cloth completely inside the green box, then tap Scan Cloth again.";
+
+  /* Change button behaviour */
+  const buttons =
+    document.querySelectorAll("button");
+
+  buttons.forEach(function(btn){
+
+    if(btn.innerText.includes("Scan Cloth")){
+
+      btn.onclick =
+        captureCloth;
+
+    }
+
+  });
 
 }
 
 
-/* =========================
-   SCAN REAL CLOTH
-========================= */
+/* =====================================
+   CAPTURE CLOTH
+===================================== */
 
-function scanCloth() {
+function captureCloth(){
 
-  if (!stream) {
+  if(!stream){
 
     alert("Start camera first.");
 
@@ -371,17 +533,38 @@ function scanCloth() {
   const canvas =
     document.getElementById("scanCanvas");
 
-  canvas.width =
-    video.videoWidth;
-
-  canvas.height =
-    video.videoHeight;
-
   const ctx =
     canvas.getContext("2d");
 
+
+  /*
+     Crop the same central area
+     shown by the green guide.
+  */
+
+  const sx =
+    video.videoWidth * 0.12;
+
+  const sy =
+    video.videoHeight * 0.15;
+
+  const sw =
+    video.videoWidth * 0.76;
+
+  const sh =
+    video.videoHeight * 0.70;
+
+
+  canvas.width = 700;
+  canvas.height = 600;
+
+
   ctx.drawImage(
     video,
+    sx,
+    sy,
+    sw,
+    sh,
     0,
     0,
     canvas.width,
@@ -389,10 +572,19 @@ function scanCloth() {
   );
 
 
+  /*
+     Try to remove simple background
+     around the cloth.
+  */
+
+  removeSimpleBackground(
+    canvas
+  );
+
+
   scannedCloth =
     canvas.toDataURL(
-      "image/jpeg",
-      0.9
+      "image/png"
     );
 
 
@@ -402,27 +594,221 @@ function scanCloth() {
   );
 
 
-  document.getElementById("preview")
-    .src =
+  const preview =
+    document.getElementById("preview");
+
+  preview.src =
     scannedCloth;
 
-  document.getElementById("preview")
-    .style.display =
+  preview.style.display =
     "block";
+
+
+  document
+    .getElementById("scanGuide")
+    .style.display =
+    "none";
+
+
+  scanning = false;
+
+
+  /* Restore scan button */
+
+  const buttons =
+    document.querySelectorAll("button");
+
+  buttons.forEach(function(btn){
+
+    if(btn.innerText.includes("Scan Cloth")){
+
+      btn.onclick =
+        beginScan;
+
+    }
+
+  });
 
 
   document.getElementById("status")
     .innerText =
-    "✅ Cloth scanned";
+    "✅ Cloth scanned. Now point camera at the real Ganpati and press Try On.";
 
 }
 
 
-/* =========================
-   TRY ON
-========================= */
+/* =====================================
+   SIMPLE BACKGROUND REMOVAL
+===================================== */
 
-function tryOn() {
+function removeSimpleBackground(canvas){
+
+  const ctx =
+    canvas.getContext("2d");
+
+  const imageData =
+    ctx.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+  const data =
+    imageData.data;
+
+
+  /*
+     Sample background from
+     four corners.
+  */
+
+  const corners = [
+
+    getPixel(data,canvas.width,0,0),
+
+    getPixel(
+      data,
+      canvas.width,
+      canvas.width-1,
+      0
+    ),
+
+    getPixel(
+      data,
+      canvas.width,
+      0,
+      canvas.height-1
+    ),
+
+    getPixel(
+      data,
+      canvas.width,
+      canvas.width-1,
+      canvas.height-1
+    )
+
+  ];
+
+
+  let bgR = 0;
+  let bgG = 0;
+  let bgB = 0;
+
+
+  corners.forEach(function(c){
+
+    bgR += c.r;
+    bgG += c.g;
+    bgB += c.b;
+
+  });
+
+
+  bgR /= corners.length;
+  bgG /= corners.length;
+  bgB /= corners.length;
+
+
+  /*
+     Make pixels similar to the
+     background transparent.
+  */
+
+  for(
+    let y=0;
+    y<canvas.height;
+    y++
+  ){
+
+    for(
+      let x=0;
+      x<canvas.width;
+      x++
+    ){
+
+      const i =
+        (y*canvas.width+x)*4;
+
+      const r =
+        data[i];
+
+      const g =
+        data[i+1];
+
+      const b =
+        data[i+2];
+
+
+      const distance =
+        Math.sqrt(
+
+          Math.pow(r-bgR,2) +
+
+          Math.pow(g-bgG,2) +
+
+          Math.pow(b-bgB,2)
+
+        );
+
+
+      /*
+         Only remove pixels that
+         are very close to the
+         sampled background.
+
+         This prevents most of
+         the cloth from disappearing.
+      */
+
+      if(distance < 28){
+
+        data[i+3] = 0;
+
+      }
+
+    }
+
+  }
+
+
+  ctx.putImageData(
+    imageData,
+    0,
+    0
+  );
+
+}
+
+
+function getPixel(
+  data,
+  width,
+  x,
+  y
+){
+
+  const i =
+    (y*width+x)*4;
+
+  return{
+
+    r:data[i],
+
+    g:data[i+1],
+
+    b:data[i+2]
+
+  };
+
+}
+
+
+/* =====================================
+   TRY ON
+===================================== */
+
+function tryOn(){
 
   scannedCloth =
     scannedCloth ||
@@ -431,10 +817,10 @@ function tryOn() {
     );
 
 
-  if (!scannedCloth) {
+  if(!scannedCloth){
 
     alert(
-      "Scan the cloth first."
+      "Scan the real cloth first."
     );
 
     return;
@@ -445,8 +831,9 @@ function tryOn() {
   clothImage =
     new Image();
 
+
   clothImage.onload =
-    function() {
+    function(){
 
       drawDress();
 
@@ -461,18 +848,20 @@ function tryOn() {
     .innerText =
     "🛕 " +
     selectedDress.toUpperCase() +
-    " preview";
+    " preview active";
 
 }
 
 
-/* =========================
+/* =====================================
    MAIN DRAW
-========================= */
+===================================== */
 
-function drawDress() {
+function drawDress(){
 
-  if (!clothImage) return;
+  if(!clothImage)
+    return;
+
 
   const canvas =
     document.getElementById(
@@ -482,6 +871,7 @@ function drawDress() {
   const ctx =
     canvas.getContext("2d");
 
+
   ctx.clearRect(
     0,
     0,
@@ -490,7 +880,7 @@ function drawDress() {
   );
 
 
-  if (selectedDress === "dhoti") {
+  if(selectedDress === "dhoti"){
 
     drawDhoti(
       ctx,
@@ -501,7 +891,7 @@ function drawDress() {
   }
 
 
-  if (selectedDress === "dupatta") {
+  if(selectedDress === "dupatta"){
 
     drawDupatta(
       ctx,
@@ -512,7 +902,7 @@ function drawDress() {
   }
 
 
-  if (selectedDress === "pheta") {
+  if(selectedDress === "pheta"){
 
     drawPheta(
       ctx,
@@ -525,18 +915,18 @@ function drawDress() {
 }
 
 
-/* =========================
-   TEXTURE
-========================= */
+/* =====================================
+   TEXTURE HELPER
+===================================== */
 
-function drawTexture(
+function textureFill(
   ctx,
   image,
   x,
   y,
   width,
   height
-) {
+){
 
   ctx.drawImage(
     image,
@@ -549,45 +939,74 @@ function drawTexture(
 }
 
 
-/* =========================
+/* =====================================
    DHOTI
-========================= */
+===================================== */
 
 function drawDhoti(
   ctx,
   image,
   canvas
-) {
+){
 
   const size =
     Number(
-      document.getElementById("size")
-        .value
+      document.getElementById("size").value
     );
+
 
   const posY =
     Number(
-      document.getElementById("posY")
-        .value
+      document.getElementById("posY").value
     );
+
 
   const rotation =
     Number(
-      document.getElementById("rotation")
+      document
+        .getElementById("rotation")
         .value
     );
+
+
+  const leftX =
+    Number(
+      document
+        .getElementById("leftX")
+        .value
+    ) / 100;
+
+
+  const rightX =
+    Number(
+      document
+        .getElementById("rightX")
+        .value
+    ) / 100;
+
+
+  const length =
+    Number(
+      document
+        .getElementById("dhotiLength")
+        .value
+    ) / 100;
 
 
   const W =
     canvas.width *
     size / 100;
 
+
   const H =
-    W * 1.15;
+    W *
+    1.15 *
+    length;
 
 
   const centerX =
     canvas.width / 2;
+
 
   const centerY =
     canvas.height *
@@ -610,7 +1029,9 @@ function drawDhoti(
 
 
   /*
-     WAIST BAND
+     =================================
+     WAISTBAND
+     =================================
   */
 
   ctx.save();
@@ -618,34 +1039,35 @@ function drawDhoti(
   ctx.beginPath();
 
   ctx.moveTo(
-    -W * 0.48,
-    -H * 0.48
+    -W*0.48,
+    -H*0.50
   );
 
   ctx.lineTo(
-    W * 0.48,
-    -H * 0.48
+    W*0.48,
+    -H*0.50
   );
 
   ctx.lineTo(
-    W * 0.42,
-    -H * 0.27
+    W*0.43,
+    -H*0.30
   );
 
   ctx.lineTo(
-    -W * 0.42,
-    -H * 0.27
+    -W*0.43,
+    -H*0.30
   );
 
   ctx.closePath();
 
   ctx.clip();
 
-  drawTexture(
+
+  textureFill(
     ctx,
     image,
-    -W / 2,
-    -H / 2,
+    -W*0.50,
+    -H*0.50,
     W,
     H
   );
@@ -654,148 +1076,255 @@ function drawDhoti(
 
 
   /*
-     LEFT DHOTI LEG
+     =================================
+     LEFT DHOTI PANEL
+     =================================
   */
 
   ctx.save();
 
   ctx.beginPath();
 
+
   ctx.moveTo(
-    -W * 0.44,
-    -H * 0.29
+    W*leftX - W*0.20,
+    -H*0.30
   );
 
-  ctx.lineTo(
-    -W * 0.05,
-    -H * 0.29
-  );
 
   ctx.lineTo(
-    -W * 0.10,
-    -H * 0.02
+    W*leftX + W*0.10,
+    -H*0.30
   );
 
-  ctx.lineTo(
-    -W * 0.17,
-    H * 0.46
-  );
 
   ctx.lineTo(
-    -W * 0.48,
-    H * 0.39
+    W*leftX + W*0.18,
+    H*0.34
   );
+
+
+  ctx.quadraticCurveTo(
+    W*leftX,
+    H*0.48,
+    W*leftX - W*0.22,
+    H*0.40
+  );
+
+
+  ctx.lineTo(
+    W*leftX - W*0.34,
+    H*0.34
+  );
+
 
   ctx.closePath();
 
   ctx.clip();
 
-  drawTexture(
+
+  textureFill(
     ctx,
     image,
-    -W / 2,
-    -H / 2,
-    W,
-    H
+    -W*0.48,
+    -H*0.50,
+    W*0.60,
+    H*1.10
   );
+
 
   ctx.restore();
 
 
   /*
-     RIGHT DHOTI LEG
+     =================================
+     RIGHT DHOTI PANEL
+     =================================
   */
 
   ctx.save();
 
   ctx.beginPath();
 
+
   ctx.moveTo(
-    W * 0.05,
-    -H * 0.29
+    W*rightX - W*0.10,
+    -H*0.30
   );
 
-  ctx.lineTo(
-    W * 0.44,
-    -H * 0.29
-  );
 
   ctx.lineTo(
-    W * 0.48,
-    H * 0.39
+    W*rightX + W*0.20,
+    -H*0.30
   );
 
-  ctx.lineTo(
-    W * 0.17,
-    H * 0.46
-  );
 
   ctx.lineTo(
-    W * 0.10,
-    -H * 0.02
+    W*rightX + W*0.34,
+    H*0.34
   );
+
+
+  ctx.lineTo(
+    W*rightX + W*0.22,
+    H*0.40
+  );
+
+
+  ctx.quadraticCurveTo(
+    W*rightX,
+    H*0.48,
+    W*rightX - W*0.18,
+    H*0.34
+  );
+
 
   ctx.closePath();
 
   ctx.clip();
 
-  drawTexture(
+
+  textureFill(
     ctx,
     image,
-    -W / 2,
-    -H / 2,
-    W,
-    H
+    W*0.02,
+    -H*0.50,
+    W*0.60,
+    H*1.10
   );
+
 
   ctx.restore();
 
 
   /*
-     CENTRAL PLEAT
+     =================================
+     CENTER PLEATS
+     =================================
   */
 
   ctx.save();
 
+  ctx.globalAlpha = 0.85;
+
   ctx.beginPath();
 
   ctx.moveTo(
-    -W * 0.05,
-    -H * 0.30
+    -W*0.06,
+    -H*0.30
   );
 
   ctx.lineTo(
-    W * 0.05,
-    -H * 0.30
+    W*0.06,
+    -H*0.30
   );
 
   ctx.lineTo(
-    W * 0.08,
-    H * 0.25
+    W*0.09,
+    H*0.24
   );
 
   ctx.lineTo(
     0,
-    H * 0.40
+    H*0.38
   );
 
   ctx.lineTo(
-    -W * 0.08,
-    H * 0.25
+    -W*0.09,
+    H*0.24
   );
 
   ctx.closePath();
 
   ctx.clip();
 
-  drawTexture(
+
+  textureFill(
     ctx,
     image,
-    -W / 2,
-    -H / 2,
-    W,
-    H
+    -W*0.08,
+    -H*0.35,
+    W*0.16,
+    H*0.75
   );
+
+
+  ctx.restore();
+
+
+  /*
+     =================================
+     PLEAT LINES
+     =================================
+  */
+
+  ctx.save();
+
+  ctx.globalAlpha = 0.28;
+
+  ctx.lineWidth =
+    Math.max(
+      2,
+      W*0.008
+    );
+
+
+  for(
+    let i=-3;
+    i<=3;
+    i++
+  ){
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      i*W*0.055,
+      -H*0.26
+    );
+
+    ctx.quadraticCurveTo(
+      i*W*0.04,
+      H*0.02,
+      i*W*0.07,
+      H*0.30
+    );
+
+    ctx.stroke();
+
+  }
+
+
+  ctx.restore();
+
+
+  /*
+     WAIST BORDER
+  */
+
+  ctx.save();
+
+  ctx.globalAlpha = 0.65;
+
+  ctx.lineWidth =
+    Math.max(
+      2,
+      W*0.012
+    );
+
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    -W*0.43,
+    -H*0.30
+  );
+
+  ctx.lineTo(
+    W*0.43,
+    -H*0.30
+  );
+
+  ctx.stroke();
 
   ctx.restore();
 
@@ -805,31 +1334,32 @@ function drawDhoti(
 }
 
 
-/* =========================
+/* =====================================
    DUPATTA
-========================= */
+===================================== */
 
 function drawDupatta(
   ctx,
   image,
   canvas
-) {
+){
 
   const size =
     Number(
-      document.getElementById("size")
-        .value
+      document.getElementById("size").value
     );
+
 
   const posY =
     Number(
-      document.getElementById("posY")
-        .value
+      document.getElementById("posY").value
     );
+
 
   const rotation =
     Number(
-      document.getElementById("rotation")
+      document
+        .getElementById("rotation")
         .value
     );
 
@@ -838,60 +1368,67 @@ function drawDupatta(
     canvas.width *
     size / 100;
 
+
   const H =
-    W * 1.8;
+    W*1.65;
 
 
   ctx.save();
 
+
   ctx.translate(
-    canvas.width / 2,
-    canvas.height *
-    posY / 100
+    canvas.width/2,
+    canvas.height*
+    posY/100
   );
 
+
   ctx.rotate(
-    rotation *
-    Math.PI / 180
+    rotation*
+    Math.PI/180
   );
 
 
   ctx.beginPath();
 
   ctx.moveTo(
-    -W * 0.32,
-    -H * 0.50
+    -W*0.32,
+    -H*0.50
   );
 
+
   ctx.quadraticCurveTo(
-    -W * 0.55,
-    -H * 0.15,
-    -W * 0.28,
-    H * 0.50
+    -W*0.55,
+    -H*0.10,
+    -W*0.28,
+    H*0.50
   );
+
 
   ctx.lineTo(
-    W * 0.28,
-    H * 0.50
+    W*0.28,
+    H*0.50
   );
 
+
   ctx.quadraticCurveTo(
-    W * 0.55,
-    -H * 0.15,
-    W * 0.32,
-    -H * 0.50
+    W*0.55,
+    -H*0.10,
+    W*0.32,
+    -H*0.50
   );
+
 
   ctx.closePath();
 
   ctx.clip();
 
 
-  drawTexture(
+  textureFill(
     ctx,
     image,
-    -W / 2,
-    -H / 2,
+    -W/2,
+    -H/2,
     W,
     H
   );
@@ -902,98 +1439,108 @@ function drawDupatta(
 }
 
 
-/* =========================
+/* =====================================
    PHETA
-========================= */
+===================================== */
 
 function drawPheta(
   ctx,
   image,
   canvas
-) {
+){
 
   const size =
     Number(
-      document.getElementById("size")
-        .value
+      document.getElementById("size").value
     );
+
 
   const posY =
     Number(
-      document.getElementById("posY")
-        .value
+      document.getElementById("posY").value
     );
+
 
   const rotation =
     Number(
-      document.getElementById("rotation")
+      document
+        .getElementById("rotation")
         .value
     );
 
 
   const W =
-    canvas.width *
-    size / 100;
+    canvas.width*
+    size/100;
+
 
   const H =
-    W * 0.65;
+    W*0.65;
 
 
   ctx.save();
 
+
   ctx.translate(
-    canvas.width / 2,
-    canvas.height *
-    posY / 100
+    canvas.width/2,
+    canvas.height*
+    posY/100
   );
 
+
   ctx.rotate(
-    rotation *
-    Math.PI / 180
+    rotation*
+    Math.PI/180
   );
 
 
   ctx.beginPath();
 
+
   ctx.moveTo(
-    -W * 0.50,
-    H * 0.15
+    -W*0.50,
+    H*0.15
   );
 
+
   ctx.quadraticCurveTo(
-    -W * 0.48,
-    -H * 0.48,
+    -W*0.48,
+    -H*0.48,
     0,
-    -H * 0.50
+    -H*0.50
   );
+
 
   ctx.quadraticCurveTo(
-    W * 0.48,
-    -H * 0.48,
-    W * 0.50,
-    H * 0.15
+    W*0.48,
+    -H*0.48,
+    W*0.50,
+    H*0.15
   );
 
-  ctx.lineTo(
-    W * 0.38,
-    H * 0.45
-  );
 
   ctx.lineTo(
-    -W * 0.38,
-    H * 0.45
+    W*0.38,
+    H*0.45
   );
+
+
+  ctx.lineTo(
+    -W*0.38,
+    H*0.45
+  );
+
 
   ctx.closePath();
 
   ctx.clip();
 
 
-  drawTexture(
+  textureFill(
     ctx,
     image,
-    -W / 2,
-    -H / 2,
+    -W/2,
+    -H/2,
     W,
     H
   );
@@ -1004,16 +1551,25 @@ function drawPheta(
 }
 
 
-/* =========================
-   START
-========================= */
+/* =====================================
+   INITIALIZE
+===================================== */
 
 selectDress("dhoti");
+
 
 window.addEventListener(
   "resize",
   resizeCanvas
 );
+
+
+document
+  .getElementById("camera")
+  .addEventListener(
+    "loadedmetadata",
+    resizeCanvas
+  );
 
 </script>
 
