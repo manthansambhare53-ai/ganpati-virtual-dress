@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,109 +11,142 @@
       margin: 0;
       background: #111;
       color: white;
-      font-family: Arial, sans-serif;
+      font-family: Arial;
       text-align: center;
     }
 
     h1 {
-      margin-top: 30px;
+      margin: 20px 0 5px;
     }
 
-    button {
-      padding: 15px 25px;
-      margin: 10px;
-      border: none;
-      border-radius: 30px;
-      font-size: 17px;
-      font-weight: bold;
+    p {
+      color: #ccc;
+    }
+
+    .cameraBox {
+      position: relative;
+      width: 95%;
+      max-width: 500px;
+      margin: 20px auto;
+      overflow: hidden;
+      border-radius: 15px;
     }
 
     video {
-      width: 95%;
-      max-width: 500px;
-      border-radius: 15px;
-      margin-top: 20px;
+      width: 100%;
+      display: block;
+    }
+
+    #clothOverlay {
+      position: absolute;
+      display: none;
+      pointer-events: none;
+      width: 45%;
+      left: 27%;
+      top: 48%;
+    }
+
+    button {
+      padding: 14px 22px;
+      margin: 7px;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    #status {
+      margin: 15px;
+      color: #00ff88;
     }
 
     canvas {
       display: none;
     }
   </style>
-
 </head>
 
 <body>
 
   <h1>🛕 Ganpati Virtual Dress</h1>
 
-  <p>Scan your cloth</p>
+  <p id="status">Start camera first</p>
 
-  <video id="camera" autoplay playsinline></video>
+  <div class="cameraBox">
 
-  <br>
+    <video id="camera" autoplay playsinline></video>
+
+    <img id="clothOverlay">
+
+  </div>
 
   <button onclick="startCamera()">
     📷 Start Camera
   </button>
 
   <button onclick="scanCloth()">
-    📸 Scan Cloth
+    👕 Scan Cloth
+  </button>
+
+  <button onclick="showDress()">
+    🛕 Try on Ganpati
   </button>
 
   <canvas id="canvas"></canvas>
 
   <script>
 
-    let stream;
+    let stream = null;
 
     async function startCamera() {
 
       try {
 
         stream = await navigator.mediaDevices.getUserMedia({
-
           video: {
-            facingMode: "environment"
+            facingMode: {
+              ideal: "environment"
+            }
           },
-
           audio: false
-
         });
 
-        document.getElementById("camera").srcObject = stream;
+        const video = document.getElementById("camera");
+
+        video.srcObject = stream;
+
+        document.getElementById("status").innerText =
+          "Camera started. Show the cloth.";
 
       } catch (error) {
 
         console.log(error);
 
-        alert("Please allow camera permission.");
+        document.getElementById("status").innerText =
+          "❌ Camera permission required.";
 
       }
-
     }
 
 
     function scanCloth() {
 
-      const video =
-        document.getElementById("camera");
-
-      const canvas =
-        document.getElementById("canvas");
-
       if (!stream) {
 
-        alert("Start the camera first.");
+        alert("Start camera first.");
 
         return;
-
       }
 
+      const video = document.getElementById("camera");
+
+      const canvas = document.getElementById("canvas");
+
       canvas.width = video.videoWidth;
+
       canvas.height = video.videoHeight;
 
-      const ctx =
-        canvas.getContext("2d");
+      const ctx = canvas.getContext("2d");
 
       ctx.drawImage(
         video,
@@ -132,12 +164,39 @@
         clothImage
       );
 
-      alert("✅ Cloth scanned!");
+      document.getElementById("status").innerText =
+        "✅ Cloth scanned! Now point camera at Ganpati.";
+
+      alert("Cloth scanned successfully!");
+
+    }
+
+
+    function showDress() {
+
+      const cloth =
+        localStorage.getItem("scannedCloth");
+
+      if (!cloth) {
+
+        alert("Scan the cloth first.");
+
+        return;
+      }
+
+      const overlay =
+        document.getElementById("clothOverlay");
+
+      overlay.src = cloth;
+
+      overlay.style.display = "block";
+
+      document.getElementById("status").innerText =
+        "🛕 Virtual dhoti preview ON";
 
     }
 
   </script>
 
 </body>
-
 </html>
