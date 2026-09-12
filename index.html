@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Ganpati Virtual Dress AR</title>
+<title>Ganpati Virtual Dhoti AR</title>
 
 <style>
+
 *{
   box-sizing:border-box;
 }
@@ -20,21 +21,21 @@ body{
 }
 
 h1{
-  margin:16px 0 4px;
-  font-size:25px;
+  margin:15px 0 5px;
+  font-size:24px;
 }
 
 #status{
-  margin:8px;
   color:#00ff88;
-  min-height:20px;
+  min-height:22px;
+  margin:8px;
 }
 
 .camera{
   position:relative;
   width:96%;
   max-width:650px;
-  margin:12px auto;
+  margin:auto;
   overflow:hidden;
   border-radius:18px;
   background:#000;
@@ -54,9 +55,15 @@ h1{
   pointer-events:none;
 }
 
-/* CLOTH SCAN GUIDE */
+#pointCanvas{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+}
 
-#scanGuide{
+.scanGuide{
   position:absolute;
   left:12%;
   top:15%;
@@ -64,89 +71,75 @@ h1{
   height:70%;
   border:3px dashed #00ff88;
   border-radius:18px;
-  pointer-events:none;
   display:none;
+  pointer-events:none;
 }
 
-#scanGuideText{
+.scanText{
   position:absolute;
+  top:10px;
   left:0;
   right:0;
-  top:7%;
-  color:white;
-  font-size:15px;
   font-weight:bold;
-  text-shadow:0 2px 5px #000;
+  text-shadow:0 2px 5px black;
 }
-
-/* BUTTONS */
 
 button{
   border:0;
-  border-radius:25px;
-  padding:12px 16px;
+  border-radius:28px;
+  padding:13px 18px;
   margin:5px;
   font-size:15px;
   font-weight:bold;
 }
 
 button.active{
-  outline:3px solid #00ff88;
+  outline:4px solid #00ff88;
 }
-
-button:active{
-  transform:scale(.97);
-}
-
-/* CONTROLS */
 
 .controls{
   width:95%;
-  max-width:520px;
-  margin:12px auto 30px;
-  padding:10px;
+  max-width:550px;
+  margin:10px auto 30px;
 }
 
-.controlBox{
+.box{
   background:#191919;
-  border-radius:14px;
-  padding:8px;
-  margin:8px 0;
+  border-radius:16px;
+  padding:12px;
+  margin:10px 0;
 }
 
 label{
   display:block;
-  margin:12px 5px;
-  font-size:14px;
+  margin:12px;
 }
 
 input[type=range]{
   width:90%;
 }
 
-/* PREVIEW */
-
 #preview{
   display:none;
-  width:140px;
-  height:110px;
+  width:150px;
+  height:120px;
   object-fit:contain;
   margin:10px auto;
-  border-radius:10px;
-  background:#222;
+  border-radius:12px;
 }
 
-.small{
-  font-size:12px;
+.info{
   color:#aaa;
-  margin:5px 15px;
+  font-size:13px;
+  margin:8px 20px;
 }
+
 </style>
 </head>
 
 <body>
 
-<h1>🛕 Ganpati Virtual Dress AR</h1>
+<h1>🛕 Ganpati Virtual Dhoti AR</h1>
 
 <div id="status">
 Start camera
@@ -162,38 +155,45 @@ Start camera
 
   <canvas id="dressCanvas"></canvas>
 
-  <div id="scanGuide">
-    <div id="scanGuideText">
-      Place the real cloth inside this box
+  <canvas
+    id="pointCanvas"
+    onclick="handlePoint(event)">
+  </canvas>
+
+  <div
+    id="scanGuide"
+    class="scanGuide">
+
+    <div class="scanText">
+      Place cloth completely inside this box
     </div>
+
   </div>
 
 </div>
 
 
-<!-- DRESS TYPE -->
-
 <div>
 
-<button id="dhotiBtn"
-onclick="selectDress('dhoti')">
+<button
+  id="dhotiBtn"
+  class="active"
+  onclick="selectDress('dhoti')">
 👕 Dhoti
 </button>
 
-<button id="dupattaBtn"
-onclick="selectDress('dupatta')">
+<button
+  onclick="selectDress('dupatta')">
 🧣 Dupatta
 </button>
 
-<button id="phetaBtn"
-onclick="selectDress('pheta')">
+<button
+  onclick="selectDress('pheta')">
 👑 Pheta
 </button>
 
 </div>
 
-
-<!-- CAMERA -->
 
 <div>
 
@@ -201,7 +201,8 @@ onclick="selectDress('pheta')">
 📷 Start Camera
 </button>
 
-<button onclick="beginScan()">
+<button id="scanButton"
+onclick="startScan()">
 📸 Scan Cloth
 </button>
 
@@ -212,96 +213,68 @@ onclick="selectDress('pheta')">
 </div>
 
 
+<div>
+
+<button onclick="startAutoFit()">
+✨ Auto Fit Dhoti
+</button>
+
+<button onclick="resetFit()">
+🔄 Reset Fit
+</button>
+
+</div>
+
+
 <img id="preview">
 
 
-<div class="small">
-First scan the real cloth. Then point the camera at the real Ganpati.
+<div class="info">
+
+For Auto Fit: tap the Ganpati's
+<br>
+🟢 waist → 🔵 left leg → 🔴 right leg
+
 </div>
 
-
-<!-- FITTING CONTROLS -->
 
 <div class="controls">
 
-<div class="controlBox">
+<div class="box">
 
 <label>
-Vertical Position
+Dhoti width
 <br>
 <input
-id="posY"
+id="width"
 type="range"
-min="10"
-max="90"
-value="58"
+min="60"
+max="160"
+value="100"
 oninput="drawDress()">
 </label>
 
 <label>
-Overall Size
+Dhoti length
 <br>
 <input
-id="size"
+id="length"
 type="range"
-min="15"
-max="90"
-value="45"
+min="60"
+max="150"
+value="100"
 oninput="drawDress()">
 </label>
 
 <label>
-Rotation
+Center pleat
 <br>
 <input
-id="rotation"
-type="range"
-min="-30"
-max="30"
-value="0"
-oninput="drawDress()">
-</label>
-
-</div>
-
-
-<div
-class="controlBox"
-id="dhotiControls">
-
-<label>
-Left Leg Position
-<br>
-<input
-id="leftX"
-type="range"
-min="-35"
-max="-5"
-value="-20"
-oninput="drawDress()">
-</label>
-
-<label>
-Right Leg Position
-<br>
-<input
-id="rightX"
+id="pleat"
 type="range"
 min="5"
-max="35"
-value="20"
-oninput="drawDress()">
-</label>
-
-<label>
-Dhoti Length
-<br>
-<input
-id="dhotiLength"
-type="range"
-min="50"
-max="120"
-value="85"
+max="40"
+value="15"
 oninput="drawDress()">
 </label>
 
@@ -318,48 +291,76 @@ style="display:none">
 
 <script>
 
+/* =========================================
+   VARIABLES
+========================================= */
+
 let stream = null;
-
-let selectedDress = "dhoti";
-
-let scannedCloth = null;
 
 let clothImage = null;
 
-let scanning = false;
+let scannedCloth = null;
+
+let selectedDress = "dhoti";
+
+let scanMode = false;
+
+let autoFitMode = false;
+
+let fitPoints = [];
+
+let fit = null;
 
 
-/* =====================================
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const video =
+document.getElementById("camera");
+
+const dressCanvas =
+document.getElementById("dressCanvas");
+
+const pointCanvas =
+document.getElementById("pointCanvas");
+
+const scanCanvas =
+document.getElementById("scanCanvas");
+
+const status =
+document.getElementById("status");
+
+
+/* =========================================
    CAMERA
-===================================== */
+========================================= */
 
 async function startCamera(){
 
   try{
 
     stream =
-      await navigator.mediaDevices.getUserMedia({
+    await navigator.mediaDevices.getUserMedia({
 
-        video:{
-          facingMode:{
-            ideal:"environment"
-          },
-
-          width:{
-            ideal:1280
-          },
-
-          height:{
-            ideal:720
-          }
+      video:{
+        facingMode:{
+          ideal:"environment"
         },
 
-        audio:false
+        width:{
+          ideal:1280
+        },
 
-      });
+        height:{
+          ideal:720
+        }
 
-    const video =
-      document.getElementById("camera");
+      },
+
+      audio:false
+
+    });
 
     video.srcObject = stream;
 
@@ -367,8 +368,7 @@ async function startCamera(){
 
     resizeCanvas();
 
-    document.getElementById("status")
-      .innerText =
+    status.innerText =
       "✅ Camera ready";
 
   }
@@ -377,8 +377,7 @@ async function startCamera(){
 
     console.log(error);
 
-    document.getElementById("status")
-      .innerText =
+    status.innerText =
       "❌ Camera permission required";
 
   }
@@ -386,34 +385,37 @@ async function startCamera(){
 }
 
 
-/* =====================================
-   CANVAS SIZE
-===================================== */
+/* =========================================
+   CANVAS
+========================================= */
 
 function resizeCanvas(){
-
-  const video =
-    document.getElementById("camera");
-
-  const canvas =
-    document.getElementById("dressCanvas");
 
   if(!video.videoWidth)
     return;
 
-  canvas.width =
+  dressCanvas.width =
     video.videoWidth;
 
-  canvas.height =
+  dressCanvas.height =
     video.videoHeight;
 
+  pointCanvas.width =
+    video.videoWidth;
+
+  pointCanvas.height =
+    video.videoHeight;
+
+  drawPoints();
+
   drawDress();
+
 }
 
 
-/* =====================================
-   SELECT DRESS
-===================================== */
+/* =========================================
+   SELECT
+========================================= */
 
 function selectDress(type){
 
@@ -421,12 +423,9 @@ function selectDress(type){
 
   document
     .querySelectorAll("button")
-    .forEach(function(btn){
-
-      btn.classList.remove("active");
-
+    .forEach(b=>{
+      b.classList.remove("active");
     });
-
 
   if(type === "dhoti"){
 
@@ -436,110 +435,65 @@ function selectDress(type){
 
   }
 
-  if(type === "dupatta"){
-
-    document
-      .getElementById("dupattaBtn")
-      .classList.add("active");
-
-  }
-
-  if(type === "pheta"){
-
-    document
-      .getElementById("phetaBtn")
-      .classList.add("active");
-
-  }
-
-
-  document
-    .getElementById("dhotiControls")
-    .style.display =
-    type === "dhoti"
-      ? "block"
-      : "none";
-
-
-  document.getElementById("status")
-    .innerText =
-    "Selected: " +
+  status.innerText =
+    "Selected " +
     type.toUpperCase();
 
   drawDress();
+
 }
 
 
-/* =====================================
-   START SCAN
-===================================== */
+/* =========================================
+   SCAN START
+========================================= */
 
-function beginScan(){
+function startScan(){
 
   if(!stream){
 
-    alert("Start camera first.");
+    alert(
+      "Start camera first."
+    );
 
     return;
 
   }
 
-  scanning = true;
+  scanMode = true;
 
   document
     .getElementById("scanGuide")
     .style.display =
     "block";
 
-  document.getElementById("status")
+  document
+    .getElementById("scanButton")
     .innerText =
-    "📸 Place the cloth completely inside the green box, then tap Scan Cloth again.";
+    "📸 Capture Cloth";
 
-  /* Change button behaviour */
-  const buttons =
-    document.querySelectorAll("button");
+  document
+    .getElementById("scanButton")
+    .onclick =
+    captureCloth;
 
-  buttons.forEach(function(btn){
-
-    if(btn.innerText.includes("Scan Cloth")){
-
-      btn.onclick =
-        captureCloth;
-
-    }
-
-  });
+  status.innerText =
+    "Place the cloth completely inside the green box.";
 
 }
 
 
-/* =====================================
+/* =========================================
    CAPTURE CLOTH
-===================================== */
+========================================= */
 
 function captureCloth(){
 
-  if(!stream){
-
-    alert("Start camera first.");
-
-    return;
-
-  }
-
-  const video =
-    document.getElementById("camera");
-
-  const canvas =
-    document.getElementById("scanCanvas");
-
   const ctx =
-    canvas.getContext("2d");
-
+    scanCanvas.getContext("2d");
 
   /*
-     Crop the same central area
-     shown by the green guide.
+     Crop exactly the green guide.
   */
 
   const sx =
@@ -555,8 +509,9 @@ function captureCloth(){
     video.videoHeight * 0.70;
 
 
-  canvas.width = 700;
-  canvas.height = 600;
+  scanCanvas.width = 700;
+
+  scanCanvas.height = 600;
 
 
   ctx.drawImage(
@@ -567,23 +522,25 @@ function captureCloth(){
     sh,
     0,
     0,
-    canvas.width,
-    canvas.height
+    700,
+    600
   );
 
 
   /*
-     Try to remove simple background
-     around the cloth.
+     Slightly soften the outside.
+     The important improvement here is
+     that we no longer save the complete
+     camera frame.
   */
 
-  removeSimpleBackground(
-    canvas
+  makeEdgeTransparent(
+    scanCanvas
   );
 
 
   scannedCloth =
-    canvas.toDataURL(
+    scanCanvas.toDataURL(
       "image/png"
     );
 
@@ -594,13 +551,14 @@ function captureCloth(){
   );
 
 
-  const preview =
-    document.getElementById("preview");
-
-  preview.src =
+  document
+    .getElementById("preview")
+    .src =
     scannedCloth;
 
-  preview.style.display =
+  document
+    .getElementById("preview")
+    .style.display =
     "block";
 
 
@@ -610,43 +568,36 @@ function captureCloth(){
     "none";
 
 
-  scanning = false;
-
-
-  /* Restore scan button */
-
-  const buttons =
-    document.querySelectorAll("button");
-
-  buttons.forEach(function(btn){
-
-    if(btn.innerText.includes("Scan Cloth")){
-
-      btn.onclick =
-        beginScan;
-
-    }
-
-  });
-
-
-  document.getElementById("status")
+  document
+    .getElementById("scanButton")
     .innerText =
-    "✅ Cloth scanned. Now point camera at the real Ganpati and press Try On.";
+    "📸 Scan Cloth";
+
+  document
+    .getElementById("scanButton")
+    .onclick =
+    startScan;
+
+
+  scanMode = false;
+
+
+  status.innerText =
+    "✅ Cloth scanned. Press Try On.";
 
 }
 
 
-/* =====================================
-   SIMPLE BACKGROUND REMOVAL
-===================================== */
+/* =========================================
+   EDGE TRANSPARENCY
+========================================= */
 
-function removeSimpleBackground(canvas){
+function makeEdgeTransparent(canvas){
 
   const ctx =
     canvas.getContext("2d");
 
-  const imageData =
+  const data =
     ctx.getImageData(
       0,
       0,
@@ -654,66 +605,14 @@ function removeSimpleBackground(canvas){
       canvas.height
     );
 
-  const data =
-    imageData.data;
-
-
   /*
-     Sample background from
-     four corners.
+     We mainly feather the outer border.
+     We DON'T aggressively delete white pixels,
+     because white/cream cloth can have almost
+     the same colour as the floor.
   */
 
-  const corners = [
-
-    getPixel(data,canvas.width,0,0),
-
-    getPixel(
-      data,
-      canvas.width,
-      canvas.width-1,
-      0
-    ),
-
-    getPixel(
-      data,
-      canvas.width,
-      0,
-      canvas.height-1
-    ),
-
-    getPixel(
-      data,
-      canvas.width,
-      canvas.width-1,
-      canvas.height-1
-    )
-
-  ];
-
-
-  let bgR = 0;
-  let bgG = 0;
-  let bgB = 0;
-
-
-  corners.forEach(function(c){
-
-    bgR += c.r;
-    bgG += c.g;
-    bgB += c.b;
-
-  });
-
-
-  bgR /= corners.length;
-  bgG /= corners.length;
-  bgB /= corners.length;
-
-
-  /*
-     Make pixels similar to the
-     background transparent.
-  */
+  const border = 25;
 
   for(
     let y=0;
@@ -727,43 +626,25 @@ function removeSimpleBackground(canvas){
       x++
     ){
 
-      const i =
-        (y*canvas.width+x)*4;
-
-      const r =
-        data[i];
-
-      const g =
-        data[i+1];
-
-      const b =
-        data[i+2];
-
-
-      const distance =
-        Math.sqrt(
-
-          Math.pow(r-bgR,2) +
-
-          Math.pow(g-bgG,2) +
-
-          Math.pow(b-bgB,2)
-
+      const edge =
+        Math.min(
+          x,
+          y,
+          canvas.width-x,
+          canvas.height-y
         );
 
+      if(edge < border){
 
-      /*
-         Only remove pixels that
-         are very close to the
-         sampled background.
+        const i =
+          (y*canvas.width+x)*4;
 
-         This prevents most of
-         the cloth from disappearing.
-      */
-
-      if(distance < 28){
-
-        data[i+3] = 0;
+        data.data[i+3] =
+          Math.floor(
+            255 *
+            edge /
+            border
+          );
 
       }
 
@@ -771,9 +652,8 @@ function removeSimpleBackground(canvas){
 
   }
 
-
   ctx.putImageData(
-    imageData,
+    data,
     0,
     0
   );
@@ -781,32 +661,9 @@ function removeSimpleBackground(canvas){
 }
 
 
-function getPixel(
-  data,
-  width,
-  x,
-  y
-){
-
-  const i =
-    (y*width+x)*4;
-
-  return{
-
-    r:data[i],
-
-    g:data[i+1],
-
-    b:data[i+2]
-
-  };
-
-}
-
-
-/* =====================================
+/* =========================================
    TRY ON
-===================================== */
+========================================= */
 
 function tryOn(){
 
@@ -820,7 +677,7 @@ function tryOn(){
   if(!scannedCloth){
 
     alert(
-      "Scan the real cloth first."
+      "Scan cloth first."
     );
 
     return;
@@ -833,81 +690,322 @@ function tryOn(){
 
 
   clothImage.onload =
-    function(){
+  function(){
 
-      drawDress();
+    drawDress();
 
-    };
+  };
 
 
   clothImage.src =
     scannedCloth;
 
 
-  document.getElementById("status")
-    .innerText =
-    "🛕 " +
-    selectedDress.toUpperCase() +
-    " preview active";
+  status.innerText =
+    "🛕 Dhoti ready.";
 
 }
 
 
-/* =====================================
-   MAIN DRAW
-===================================== */
+/* =========================================
+   AUTO FIT START
+========================================= */
+
+function startAutoFit(){
+
+  if(!clothImage){
+
+    alert(
+      "Scan the cloth and press Try On first."
+    );
+
+    return;
+
+  }
+
+
+  autoFitMode = true;
+
+  fitPoints = [];
+
+  pointCanvas.style.pointerEvents =
+    "auto";
+
+  drawPoints();
+
+
+  status.innerText =
+    "🟢 Tap Ganpati waist";
+
+}
+
+
+/* =========================================
+   POINT SELECTION
+========================================= */
+
+function handlePoint(event){
+
+  if(!autoFitMode)
+    return;
+
+
+  const rect =
+    pointCanvas.getBoundingClientRect();
+
+
+  const scaleX =
+    pointCanvas.width /
+    rect.width;
+
+  const scaleY =
+    pointCanvas.height /
+    rect.height;
+
+
+  const x =
+    (event.clientX -
+    rect.left) *
+    scaleX;
+
+
+  const y =
+    (event.clientY -
+    rect.top) *
+    scaleY;
+
+
+  fitPoints.push({
+    x:x,
+    y:y
+  });
+
+
+  drawPoints();
+
+
+  if(fitPoints.length === 1){
+
+    status.innerText =
+      "🔵 Now tap LEFT leg / foot";
+
+  }
+
+
+  if(fitPoints.length === 2){
+
+    status.innerText =
+      "🔴 Now tap RIGHT leg / foot";
+
+  }
+
+
+  if(fitPoints.length === 3){
+
+    calculateFit();
+
+    autoFitMode = false;
+
+    pointCanvas.style.pointerEvents =
+      "none";
+
+    status.innerText =
+      "✨ Dhoti automatically fitted.";
+
+  }
+
+}
+
+
+/* =========================================
+   DRAW POINTS
+========================================= */
+
+function drawPoints(){
+
+  const ctx =
+    pointCanvas.getContext("2d");
+
+  ctx.clearRect(
+    0,
+    0,
+    pointCanvas.width,
+    pointCanvas.height
+  );
+
+
+  fitPoints.forEach(
+    (p,index)=>{
+
+      ctx.beginPath();
+
+      ctx.arc(
+        p.x,
+        p.y,
+        Math.max(
+          12,
+          pointCanvas.width*0.018
+        ),
+        0,
+        Math.PI*2
+      );
+
+
+      if(index === 0)
+        ctx.fillStyle =
+          "#00ff88";
+
+      if(index === 1)
+        ctx.fillStyle =
+          "#00aaff";
+
+      if(index === 2)
+        ctx.fillStyle =
+          "#ff3344";
+
+
+      ctx.fill();
+
+      ctx.lineWidth = 3;
+
+      ctx.strokeStyle =
+        "white";
+
+      ctx.stroke();
+
+    }
+  );
+
+}
+
+
+/* =========================================
+   CALCULATE DHOTI FIT
+========================================= */
+
+function calculateFit(){
+
+  const waist =
+    fitPoints[0];
+
+  const left =
+    fitPoints[1];
+
+  const right =
+    fitPoints[2];
+
+
+  const centerX =
+    (left.x + right.x) / 2;
+
+
+  const legDistance =
+    Math.abs(
+      right.x-left.x
+    );
+
+
+  const legY =
+    (
+      left.y+
+      right.y
+    )/2;
+
+
+  /*
+     The width is based on the
+     actual distance between the
+     two selected legs.
+  */
+
+  const topWidth =
+    legDistance * 1.65;
+
+
+  const bottomWidth =
+    legDistance * 1.45;
+
+
+  const height =
+    Math.max(
+      80,
+      legY-waist.y
+    );
+
+
+  fit = {
+
+    waistX:waist.x,
+
+    waistY:waist.y,
+
+    centerX:centerX,
+
+    legY:legY,
+
+    topWidth:topWidth,
+
+    bottomWidth:bottomWidth,
+
+    height:height,
+
+    leftX:left.x,
+
+    rightX:right.x
+
+  };
+
+
+  drawDress();
+
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+function resetFit(){
+
+  fit = null;
+
+  fitPoints = [];
+
+  drawPoints();
+
+  drawDress();
+
+  status.innerText =
+    "Fit reset.";
+
+}
+
+
+/* =========================================
+   DRAW
+========================================= */
 
 function drawDress(){
+
+  const ctx =
+    dressCanvas.getContext("2d");
+
+  ctx.clearRect(
+    0,
+    0,
+    dressCanvas.width,
+    dressCanvas.height
+  );
+
 
   if(!clothImage)
     return;
 
 
-  const canvas =
-    document.getElementById(
-      "dressCanvas"
-    );
-
-  const ctx =
-    canvas.getContext("2d");
-
-
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-
   if(selectedDress === "dhoti"){
 
-    drawDhoti(
-      ctx,
-      clothImage,
-      canvas
-    );
-
-  }
-
-
-  if(selectedDress === "dupatta"){
-
-    drawDupatta(
-      ctx,
-      clothImage,
-      canvas
-    );
-
-  }
-
-
-  if(selectedDress === "pheta"){
-
-    drawPheta(
-      ctx,
-      clothImage,
-      canvas
+    drawAutomaticDhoti(
+      ctx
     );
 
   }
@@ -915,122 +1013,77 @@ function drawDress(){
 }
 
 
-/* =====================================
-   TEXTURE HELPER
-===================================== */
+/* =========================================
+   AUTOMATIC DHOTI
+========================================= */
 
-function textureFill(
-  ctx,
-  image,
-  x,
-  y,
-  width,
-  height
-){
+function drawAutomaticDhoti(ctx){
 
-  ctx.drawImage(
-    image,
-    x,
-    y,
-    width,
-    height
-  );
+  /*
+     If user hasn't calibrated yet,
+     show a reasonable center preview.
+  */
 
-}
+  if(!fit){
+
+    drawDefaultDhoti(ctx);
+
+    return;
+
+  }
 
 
-/* =====================================
-   DHOTI
-===================================== */
-
-function drawDhoti(
-  ctx,
-  image,
-  canvas
-){
-
-  const size =
-    Number(
-      document.getElementById("size").value
-    );
-
-
-  const posY =
-    Number(
-      document.getElementById("posY").value
-    );
-
-
-  const rotation =
+  const widthMultiplier =
     Number(
       document
-        .getElementById("rotation")
-        .value
-    );
-
-
-  const leftX =
-    Number(
-      document
-        .getElementById("leftX")
-        .value
+      .getElementById("width")
+      .value
     ) / 100;
 
 
-  const rightX =
+  const lengthMultiplier =
     Number(
       document
-        .getElementById("rightX")
-        .value
+      .getElementById("length")
+      .value
     ) / 100;
 
 
-  const length =
+  const pleatAmount =
     Number(
       document
-        .getElementById("dhotiLength")
-        .value
+      .getElementById("pleat")
+      .value
     ) / 100;
 
 
-  const W =
-    canvas.width *
-    size / 100;
+  const topW =
+    fit.topWidth *
+    widthMultiplier;
 
 
-  const H =
-    W *
-    1.15 *
-    length;
+  const bottomW =
+    fit.bottomWidth *
+    widthMultiplier;
 
 
-  const centerX =
-    canvas.width / 2;
+  const topY =
+    fit.waistY;
 
 
-  const centerY =
-    canvas.height *
-    posY / 100;
+  const bottomY =
+    fit.waistY +
+    fit.height *
+    lengthMultiplier;
 
 
-  ctx.save();
-
-
-  ctx.translate(
-    centerX,
-    centerY
-  );
-
-
-  ctx.rotate(
-    rotation *
-    Math.PI / 180
-  );
+  const cx =
+    fit.centerX;
 
 
   /*
      =================================
-     WAISTBAND
+     LEFT PANEL
      =================================
   */
 
@@ -1039,97 +1092,39 @@ function drawDhoti(
   ctx.beginPath();
 
   ctx.moveTo(
-    -W*0.48,
-    -H*0.50
+    cx-topW/2,
+    topY
   );
 
   ctx.lineTo(
-    W*0.48,
-    -H*0.50
+    cx,
+    topY
   );
 
   ctx.lineTo(
-    W*0.43,
-    -H*0.30
+    cx-bottomW*0.10,
+    bottomY
   );
-
-  ctx.lineTo(
-    -W*0.43,
-    -H*0.30
-  );
-
-  ctx.closePath();
-
-  ctx.clip();
-
-
-  textureFill(
-    ctx,
-    image,
-    -W*0.50,
-    -H*0.50,
-    W,
-    H
-  );
-
-  ctx.restore();
-
-
-  /*
-     =================================
-     LEFT DHOTI PANEL
-     =================================
-  */
-
-  ctx.save();
-
-  ctx.beginPath();
-
-
-  ctx.moveTo(
-    W*leftX - W*0.20,
-    -H*0.30
-  );
-
-
-  ctx.lineTo(
-    W*leftX + W*0.10,
-    -H*0.30
-  );
-
-
-  ctx.lineTo(
-    W*leftX + W*0.18,
-    H*0.34
-  );
-
 
   ctx.quadraticCurveTo(
-    W*leftX,
-    H*0.48,
-    W*leftX - W*0.22,
-    H*0.40
+    cx-bottomW*0.22,
+    bottomY+15,
+    cx-bottomW/2,
+    bottomY-5
   );
-
-
-  ctx.lineTo(
-    W*leftX - W*0.34,
-    H*0.34
-  );
-
 
   ctx.closePath();
 
   ctx.clip();
 
 
-  textureFill(
+  drawWarpedTexture(
     ctx,
-    image,
-    -W*0.48,
-    -H*0.50,
-    W*0.60,
-    H*1.10
+    clothImage,
+    cx-topW/2,
+    topY,
+    topW/2,
+    bottomY-topY
   );
 
 
@@ -1138,7 +1133,7 @@ function drawDhoti(
 
   /*
      =================================
-     RIGHT DHOTI PANEL
+     RIGHT PANEL
      =================================
   */
 
@@ -1146,51 +1141,40 @@ function drawDhoti(
 
   ctx.beginPath();
 
-
   ctx.moveTo(
-    W*rightX - W*0.10,
-    -H*0.30
+    cx,
+    topY
   );
-
 
   ctx.lineTo(
-    W*rightX + W*0.20,
-    -H*0.30
+    cx+topW/2,
+    topY
   );
-
 
   ctx.lineTo(
-    W*rightX + W*0.34,
-    H*0.34
+    cx+bottomW/2,
+    bottomY-5
   );
-
-
-  ctx.lineTo(
-    W*rightX + W*0.22,
-    H*0.40
-  );
-
 
   ctx.quadraticCurveTo(
-    W*rightX,
-    H*0.48,
-    W*rightX - W*0.18,
-    H*0.34
+    cx+bottomW*0.22,
+    bottomY+15,
+    cx+bottomW*0.10,
+    bottomY
   );
-
 
   ctx.closePath();
 
   ctx.clip();
 
 
-  textureFill(
+  drawWarpedTexture(
     ctx,
-    image,
-    W*0.02,
-    -H*0.50,
-    W*0.60,
-    H*1.10
+    clothImage,
+    cx,
+    topY,
+    topW/2,
+    bottomY-topY
   );
 
 
@@ -1205,33 +1189,35 @@ function drawDhoti(
 
   ctx.save();
 
-  ctx.globalAlpha = 0.85;
+  const gap =
+    topW *
+    pleatAmount;
+
+
+  ctx.globalAlpha =
+    0.95;
+
 
   ctx.beginPath();
 
   ctx.moveTo(
-    -W*0.06,
-    -H*0.30
+    cx-gap,
+    topY
   );
 
   ctx.lineTo(
-    W*0.06,
-    -H*0.30
+    cx+gap,
+    topY
   );
 
   ctx.lineTo(
-    W*0.09,
-    H*0.24
+    cx+gap*0.45,
+    bottomY
   );
 
   ctx.lineTo(
-    0,
-    H*0.38
-  );
-
-  ctx.lineTo(
-    -W*0.09,
-    H*0.24
+    cx-gap*0.45,
+    bottomY
   );
 
   ctx.closePath();
@@ -1239,13 +1225,47 @@ function drawDhoti(
   ctx.clip();
 
 
-  textureFill(
+  drawWarpedTexture(
     ctx,
-    image,
-    -W*0.08,
-    -H*0.35,
-    W*0.16,
-    H*0.75
+    clothImage,
+    cx-gap,
+    topY,
+    gap*2,
+    bottomY-topY
+  );
+
+
+  ctx.restore();
+
+
+  /*
+     =================================
+     WAIST BAND
+     =================================
+  */
+
+  ctx.save();
+
+  ctx.beginPath();
+
+  ctx.roundRect(
+    cx-topW/2,
+    topY-12,
+    topW,
+    25,
+    7
+  );
+
+  ctx.clip();
+
+
+  drawWarpedTexture(
+    ctx,
+    clothImage,
+    cx-topW/2,
+    topY-12,
+    topW,
+    25
   );
 
 
@@ -1260,12 +1280,16 @@ function drawDhoti(
 
   ctx.save();
 
-  ctx.globalAlpha = 0.28;
+  ctx.globalAlpha =
+    0.25;
+
+  ctx.strokeStyle =
+    "#222";
 
   ctx.lineWidth =
     Math.max(
       2,
-      W*0.008
+      topW*0.008
     );
 
 
@@ -1275,19 +1299,28 @@ function drawDhoti(
     i++
   ){
 
+    const x =
+      cx +
+      i*topW*0.055;
+
+
     ctx.beginPath();
 
     ctx.moveTo(
-      i*W*0.055,
-      -H*0.26
+      x,
+      topY+15
     );
 
+
     ctx.quadraticCurveTo(
-      i*W*0.04,
-      H*0.02,
-      i*W*0.07,
-      H*0.30
+      x-i*5,
+      topY+
+      (bottomY-topY)*0.45,
+
+      x+i*3,
+      bottomY-15
     );
+
 
     ctx.stroke();
 
@@ -1296,280 +1329,170 @@ function drawDhoti(
 
   ctx.restore();
 
+}
+
+
+/* =========================================
+   TEXTURE
+========================================= */
+
+function drawWarpedTexture(
+  ctx,
+  image,
+  x,
+  y,
+  w,
+  h
+){
 
   /*
-     WAIST BORDER
+     Slightly scale texture to prevent
+     the whole captured rectangle from
+     appearing as one obvious photograph.
+  */
+
+  ctx.drawImage(
+    image,
+    x-w*0.08,
+    y,
+    w*1.16,
+    h
+  );
+
+}
+
+
+/* =========================================
+   DEFAULT DHOTI
+========================================= */
+
+function drawDefaultDhoti(ctx){
+
+  const W =
+    dressCanvas.width*0.42;
+
+  const H =
+    W*0.95;
+
+  const cx =
+    dressCanvas.width/2;
+
+  const cy =
+    dressCanvas.height*0.58;
+
+
+  /*
+     LEFT
   */
 
   ctx.save();
 
-  ctx.globalAlpha = 0.65;
-
-  ctx.lineWidth =
-    Math.max(
-      2,
-      W*0.012
-    );
-
-
   ctx.beginPath();
 
   ctx.moveTo(
-    -W*0.43,
-    -H*0.30
+    cx-W/2,
+    cy
   );
 
   ctx.lineTo(
-    W*0.43,
-    -H*0.30
+    cx,
+    cy
   );
-
-  ctx.stroke();
-
-  ctx.restore();
-
-
-  ctx.restore();
-
-}
-
-
-/* =====================================
-   DUPATTA
-===================================== */
-
-function drawDupatta(
-  ctx,
-  image,
-  canvas
-){
-
-  const size =
-    Number(
-      document.getElementById("size").value
-    );
-
-
-  const posY =
-    Number(
-      document.getElementById("posY").value
-    );
-
-
-  const rotation =
-    Number(
-      document
-        .getElementById("rotation")
-        .value
-    );
-
-
-  const W =
-    canvas.width *
-    size / 100;
-
-
-  const H =
-    W*1.65;
-
-
-  ctx.save();
-
-
-  ctx.translate(
-    canvas.width/2,
-    canvas.height*
-    posY/100
-  );
-
-
-  ctx.rotate(
-    rotation*
-    Math.PI/180
-  );
-
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    -W*0.32,
-    -H*0.50
-  );
-
-
-  ctx.quadraticCurveTo(
-    -W*0.55,
-    -H*0.10,
-    -W*0.28,
-    H*0.50
-  );
-
 
   ctx.lineTo(
-    W*0.28,
-    H*0.50
+    cx-W*0.05,
+    cy+H
   );
-
 
   ctx.quadraticCurveTo(
-    W*0.55,
-    -H*0.10,
-    W*0.32,
-    -H*0.50
+    cx-W*0.28,
+    cy+H+15,
+    cx-W/2,
+    cy+H-10
   );
-
 
   ctx.closePath();
 
   ctx.clip();
 
-
-  textureFill(
-    ctx,
-    image,
-    -W/2,
-    -H/2,
-    W,
+  ctx.drawImage(
+    clothImage,
+    cx-W/2,
+    cy,
+    W/2,
     H
   );
 
-
   ctx.restore();
 
-}
 
-
-/* =====================================
-   PHETA
-===================================== */
-
-function drawPheta(
-  ctx,
-  image,
-  canvas
-){
-
-  const size =
-    Number(
-      document.getElementById("size").value
-    );
-
-
-  const posY =
-    Number(
-      document.getElementById("posY").value
-    );
-
-
-  const rotation =
-    Number(
-      document
-        .getElementById("rotation")
-        .value
-    );
-
-
-  const W =
-    canvas.width*
-    size/100;
-
-
-  const H =
-    W*0.65;
-
+  /*
+     RIGHT
+  */
 
   ctx.save();
 
-
-  ctx.translate(
-    canvas.width/2,
-    canvas.height*
-    posY/100
-  );
-
-
-  ctx.rotate(
-    rotation*
-    Math.PI/180
-  );
-
-
   ctx.beginPath();
 
-
   ctx.moveTo(
-    -W*0.50,
-    H*0.15
+    cx,
+    cy
   );
-
-
-  ctx.quadraticCurveTo(
-    -W*0.48,
-    -H*0.48,
-    0,
-    -H*0.50
-  );
-
-
-  ctx.quadraticCurveTo(
-    W*0.48,
-    -H*0.48,
-    W*0.50,
-    H*0.15
-  );
-
 
   ctx.lineTo(
-    W*0.38,
-    H*0.45
+    cx+W/2,
+    cy
   );
-
 
   ctx.lineTo(
-    -W*0.38,
-    H*0.45
+    cx+W/2,
+    cy+H-10
   );
 
+  ctx.quadraticCurveTo(
+    cx+W*0.28,
+    cy+H+15,
+    cx+W*0.05,
+    cy+H
+  );
 
   ctx.closePath();
 
   ctx.clip();
 
-
-  textureFill(
-    ctx,
-    image,
-    -W/2,
-    -H/2,
-    W,
+  ctx.drawImage(
+    clothImage,
+    cx,
+    cy,
+    W/2,
     H
   );
-
 
   ctx.restore();
 
 }
 
 
-/* =====================================
-   INITIALIZE
-===================================== */
-
-selectDress("dhoti");
-
+/* =========================================
+   RESIZE
+========================================= */
 
 window.addEventListener(
   "resize",
   resizeCanvas
 );
 
+video.addEventListener(
+  "loadedmetadata",
+  resizeCanvas
+);
 
-document
-  .getElementById("camera")
-  .addEventListener(
-    "loadedmetadata",
-    resizeCanvas
-  );
+
+/* =========================================
+   INITIAL
+========================================= */
+
+selectDress("dhoti");
 
 </script>
 
