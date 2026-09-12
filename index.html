@@ -1,126 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
-  <title>Ganpati Virtual Dress</title>
+<title>Ganpati Virtual Dress</title>
 
-  <style>
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+body {
+  margin: 0;
+  background: #111;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
 
-    body {
-      margin: 0;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
+h1 {
+  margin: 16px 0 4px;
+}
 
-    h1 {
-      margin: 18px 0 5px;
-    }
+#status {
+  color: #00ff88;
+  margin: 8px;
+}
 
-    #status {
-      color: #00ff88;
-      font-size: 15px;
-      padding: 5px 15px;
-    }
+.camera {
+  position: relative;
+  width: 96%;
+  max-width: 600px;
+  margin: 12px auto;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #000;
+}
 
-    .camera {
-      position: relative;
-      width: 96%;
-      max-width: 600px;
-      margin: 15px auto;
-      border-radius: 18px;
-      overflow: hidden;
-      background: #000;
-    }
+video {
+  width: 100%;
+  display: block;
+}
 
-    video {
-      width: 100%;
-      display: block;
-    }
+#dress {
+  position: absolute;
+  display: none;
+  pointer-events: none;
 
-    /* Canvas will eventually contain the AI result */
-    #overlayCanvas {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
+  left: 50%;
+  top: 55%;
 
-    button {
-      padding: 13px 20px;
-      margin: 6px;
-      border: none;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+  width: 45%;
 
-    .mode {
-      margin: 10px;
-    }
+  transform:
+    translate(-50%, -50%)
+    rotate(0deg);
+}
 
-    .selected {
-      outline: 3px solid white;
-    }
+button {
+  border: none;
+  border-radius: 25px;
+  padding: 12px 18px;
+  margin: 5px;
+  font-size: 15px;
+  font-weight: bold;
+}
 
-    #scanPreview {
-      display: none;
-      max-width: 180px;
-      max-height: 180px;
-      margin: 15px auto;
-      border-radius: 12px;
-    }
+.controls {
+  width: 95%;
+  max-width: 500px;
+  margin: auto;
+}
 
-  </style>
+label {
+  display: block;
+  margin: 12px;
+}
 
+input[type="range"] {
+  width: 85%;
+}
+
+#preview {
+  display: none;
+  width: 150px;
+  margin: 12px auto;
+  border-radius: 10px;
+}
+</style>
 </head>
 
 <body>
 
-  <h1>🛕 Ganpati Virtual Dress</h1>
+<h1>🛕 Ganpati Virtual Dress</h1>
 
-  <div id="status">
-    Camera not started
-  </div>
+<div id="status">
+Camera not started
+</div>
 
-  <div class="camera">
+<div class="camera">
 
-    <video id="camera"
-           autoplay
-           playsinline></video>
+  <video id="camera"
+         autoplay
+         playsinline></video>
 
-    <canvas id="overlayCanvas"></canvas>
+  <img id="dress">
 
-  </div>
+</div>
 
-  <div class="mode">
-
-    <button id="dhotiBtn"
-            onclick="selectDress('dhoti')">
-      👕 Dhoti
-    </button>
-
-    <button onclick="selectDress('dupatta')">
-      🧣 Dupatta
-    </button>
-
-    <button onclick="selectDress('pheta')">
-      👑 Pheta
-    </button>
-
-  </div>
+<div>
 
   <button onclick="startCamera()">
     📷 Start Camera
@@ -130,237 +120,241 @@
     📸 Scan Cloth
   </button>
 
-  <button onclick="startTryOn()">
-    🛕 Try on Ganpati
+  <button onclick="tryOn()">
+    🛕 Try on
   </button>
 
-  <img id="scanPreview">
+</div>
 
-  <canvas id="scanCanvas"
-          style="display:none;"></canvas>
+<img id="preview">
 
-  <script>
+<div class="controls">
 
-    let stream = null;
-    let selectedDress = "dhoti";
-    let scannedCloth = null;
-    let tryOnMode = false;
+  <label>
+    Dhoti Position
+    <input id="position"
+           type="range"
+           min="35"
+           max="75"
+           value="55"
+           oninput="updateDress()">
+  </label>
 
+  <label>
+    Dhoti Size
+    <input id="size"
+           type="range"
+           min="20"
+           max="80"
+           value="45"
+           oninput="updateDress()">
+  </label>
 
-    function setStatus(message) {
+  <label>
+    Rotation
+    <input id="rotation"
+           type="range"
+           min="-30"
+           max="30"
+           value="0"
+           oninput="updateDress()">
+  </label>
 
-      document.getElementById("status")
-        .innerText = message;
+</div>
 
-    }
+<canvas id="scanCanvas"
+        style="display:none;"></canvas>
 
+<script>
 
-    function selectDress(type) {
+let stream = null;
+let scannedCloth = null;
 
-      selectedDress = type;
 
-      document.querySelectorAll(".mode button")
-        .forEach(button => {
-          button.classList.remove("selected");
-        });
+/* CAMERA */
 
-      if (type === "dhoti") {
-        document.getElementById("dhotiBtn")
-          .classList.add("selected");
-      }
+async function startCamera() {
 
-      setStatus(
-        "Selected: " +
-        type.toUpperCase()
-      );
+  try {
 
-    }
+    stream =
+      await navigator.mediaDevices.getUserMedia({
 
+        video: {
+          facingMode: {
+            ideal: "environment"
+          },
 
-    async function startCamera() {
+          width: {
+            ideal: 1280
+          },
 
-      try {
+          height: {
+            ideal: 720
+          }
 
-        stream =
-          await navigator.mediaDevices.getUserMedia({
+        },
 
-            video: {
-              facingMode: {
-                ideal: "environment"
-              },
-              width: {
-                ideal: 1280
-              },
-              height: {
-                ideal: 720
-              }
-            },
+        audio: false
 
-            audio: false
+      });
 
-          });
+    const video =
+      document.getElementById("camera");
 
-        const video =
-          document.getElementById("camera");
+    video.srcObject = stream;
 
-        video.srcObject = stream;
+    await video.play();
 
-        await video.play();
+    document.getElementById("status")
+      .innerText =
+      "✅ Camera ready";
 
-        resizeCanvas();
+  }
 
-        setStatus(
-          "Camera ready. Scan your real cloth."
-        );
+  catch(error) {
 
-      }
+    console.log(error);
 
-      catch (error) {
+    document.getElementById("status")
+      .innerText =
+      "❌ Camera permission required";
 
-        console.error(error);
+  }
 
-        setStatus(
-          "❌ Camera permission required."
-        );
+}
 
-      }
 
-    }
+/* SCAN REAL CLOTH */
 
+function scanCloth() {
 
-    function resizeCanvas() {
+  if (!stream) {
 
-      const video =
-        document.getElementById("camera");
+    alert("Start camera first.");
 
-      const canvas =
-        document.getElementById("overlayCanvas");
+    return;
 
-      if (!video.videoWidth) return;
+  }
 
-      canvas.width =
-        video.videoWidth;
+  const video =
+    document.getElementById("camera");
 
-      canvas.height =
-        video.videoHeight;
+  const canvas =
+    document.getElementById("scanCanvas");
 
-    }
+  canvas.width =
+    video.videoWidth;
 
+  canvas.height =
+    video.videoHeight;
 
-    function scanCloth() {
+  const ctx =
+    canvas.getContext("2d");
 
-      if (!stream) {
+  ctx.drawImage(
+    video,
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
 
-        alert(
-          "Start the camera first."
-        );
-
-        return;
-
-      }
-
-      const video =
-        document.getElementById("camera");
-
-      const canvas =
-        document.getElementById("scanCanvas");
-
-      canvas.width =
-        video.videoWidth;
-
-      canvas.height =
-        video.videoHeight;
-
-      const ctx =
-        canvas.getContext("2d");
-
-      ctx.drawImage(
-        video,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-      scannedCloth =
-        canvas.toDataURL("image/jpeg", 0.85);
-
-      localStorage.setItem(
-        "scannedCloth",
-        scannedCloth
-      );
-
-      document.getElementById(
-        "scanPreview"
-      ).src = scannedCloth;
-
-      document.getElementById(
-        "scanPreview"
-      ).style.display = "block";
-
-      setStatus(
-        "✅ Cloth scanned. Now point at Ganpati."
-      );
-
-    }
-
-
-    function startTryOn() {
-
-      if (!scannedCloth) {
-
-        alert(
-          "Scan the cloth first."
-        );
-
-        return;
-
-      }
-
-      tryOnMode = true;
-
-      setStatus(
-        "🔎 Looking for Ganpati..."
-      );
-
-      startDetection();
-
-    }
-
-
-    function startDetection() {
-
-      /*
-        AI DETECTION WILL BE CONNECTED HERE.
-
-        The next stage will return:
-
-        ganpati.x
-        ganpati.y
-        ganpati.width
-        ganpati.height
-
-        Then the dhoti mesh will be fitted
-        to the detected lower body.
-      */
-
-      setStatus(
-        "🔎 Ganpati detector ready for connection."
-      );
-
-    }
-
-
-    window.addEventListener(
-      "resize",
-      resizeCanvas
+  scannedCloth =
+    canvas.toDataURL(
+      "image/jpeg",
+      0.85
     );
 
+  localStorage.setItem(
+    "scannedCloth",
+    scannedCloth
+  );
 
-    selectDress("dhoti");
+  document.getElementById("preview")
+    .src = scannedCloth;
 
-  </script>
+  document.getElementById("preview")
+    .style.display = "block";
+
+  document.getElementById("status")
+    .innerText =
+    "✅ Cloth scanned";
+
+}
+
+
+/* TRY ON */
+
+function tryOn() {
+
+  scannedCloth =
+    scannedCloth ||
+    localStorage.getItem(
+      "scannedCloth"
+    );
+
+  if (!scannedCloth) {
+
+    alert(
+      "Scan the cloth first."
+    );
+
+    return;
+
+  }
+
+  const dress =
+    document.getElementById("dress");
+
+  dress.src =
+    scannedCloth;
+
+  dress.style.display =
+    "block";
+
+  updateDress();
+
+  document.getElementById("status")
+    .innerText =
+    "🛕 Dhoti preview active";
+
+}
+
+
+/* POSITION */
+
+function updateDress() {
+
+  const dress =
+    document.getElementById("dress");
+
+  const position =
+    document.getElementById("position")
+      .value;
+
+  const size =
+    document.getElementById("size")
+      .value;
+
+  const rotation =
+    document.getElementById("rotation")
+      .value;
+
+  dress.style.top =
+    position + "%";
+
+  dress.style.width =
+    size + "%";
+
+  dress.style.transform =
+    "translate(-50%, -50%) rotate("
+    + rotation +
+    "deg)";
+
+}
+
+</script>
 
 </body>
-
 </html>
